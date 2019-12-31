@@ -35,19 +35,26 @@ std::vector<std::string> openDir(const std::string& path){
     return files;
 }
 
-void imageProcessing::quantize(const std::string& path, int q) {
-    std::vector<std::string> images = openDir(path);
-    std::string save_folder;
+std::string saveDir(const std::string& path, const std::string& initial_path) {
     size_t pos;
     std::string p(path);
+    std::string save_folder;
 
     while ((pos = p.find('/')) != std::string::npos) {
         save_folder = p.substr(0, pos);
         p.erase(0, pos + 1);
     }
 
-    std::string new_path = "../quant_faces/" + save_folder + "/";
+    std::string new_path = initial_path + save_folder + "/";
     mkdir(new_path.c_str(), 0777);
+
+    return new_path;
+}
+
+void imageProcessing::quantize(const std::string& path, int q) {
+    std::string initial_path = "../quant_faces/";
+    std::string new_path = saveDir(path, initial_path);
+    std::vector<std::string> images = openDir(path);
 
     for (const auto& image : images) {
         Mat img = imread(path + image, CV_LOAD_IMAGE_GRAYSCALE);
@@ -78,8 +85,39 @@ void imageProcessing::quantize(const std::string& path, int q) {
     }
 }
 
-void imageProcessing::reduce_resolution() {
+void imageProcessing::reduce_resolution(const std::string& path, int width, int height) {
+    std::string initial_path = "../reduced_faces/";
+    std::string new_path = saveDir(path, initial_path);
+    std::vector<std::string> images = openDir(path);
 
+    for (const auto& image : images) {
+        Mat img = imread(path + image, CV_LOAD_IMAGE_GRAYSCALE);
+        Mat dst(height, width, img.depth());
+
+        if (img.empty()) {
+            std::cerr << "Couldn't open or find the image " << image << std::endl;
+            std::cerr << "Do you want to continue? (y/n)" << std::endl;
+            int key = std::cin.get();
+
+            while (key != 'y' and key != 'n') {
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cerr << "Choice must be y or n! Try again, please!" << std::endl;
+                key = std::cin.get();
+            }
+
+            if (key == 'n')
+                exit(EXIT_FAILURE);
+
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+
+        IplImage tmp = img;
+        IplImage iplDst = dst;
+        cvResize(&tmp, &iplDst, CV_INTER_AREA);
+        imwrite(new_path + image, dst);
+    }
 }
 
 void imageProcessing::split_dataset() {
@@ -89,4 +127,5 @@ void imageProcessing::split_dataset() {
 int main(int argc, char *argv[]) {
     imageProcessing ip;
     ip.quantize("../orl_faces/s01/", 128);
+    ip.reduce_resolution("../orl_faces/s01/", 56, 46);
 }

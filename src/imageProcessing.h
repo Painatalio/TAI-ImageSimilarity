@@ -13,7 +13,7 @@ class imageProcessing {
 public:
     void quantize(const std::string& path, int q);
 
-    void reduce_resolution();
+    void reduce_resolution(const std::string& path, int width, int height);
 
     void split_dataset();
 };
