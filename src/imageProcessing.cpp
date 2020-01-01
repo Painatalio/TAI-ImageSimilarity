@@ -147,6 +147,83 @@ void imageProcessing::split_dataset(const std::string& path, int images_per_subj
     }
 }
 
+void imageProcessing::live_face_recognition(int deviceID, int apiID) {
+    Mat frame{};
+
+    //Initialize the video capture.
+    VideoCapture cap;
+
+    // Open the selected camera, using the selected API.
+    cap.open(deviceID + apiID);
+
+    // Check if camera was successfully opened.
+    if (!cap.isOpened()) {
+        std::cerr << "ERROR! Unable to open camera\n";
+        exit(EXIT_FAILURE);
+    }
+
+    std::cout << "Press any key to terminate!" << std::endl;
+
+    for (;;) {
+        // Wait for a new frame from camera and store it into 'frame'.
+        cap.read(frame);
+
+        // Check if the frame isn't empty.
+        if (frame.empty()) {
+            std::cerr << "ERROR: blank frame grabbed\n";
+            break;
+        }
+
+        // Show live preview.
+        imshow("Live", frame);
+
+        // Wait for a key from the keyboard to be pressed, so the live preview stops.
+        if (cvWaitKey(5) != -1)
+            break;
+    }
+}
+
+void imageProcessing::take_pictures(int deviceID, int apiID, int num_pictures = 1, const std::string& name_prefix="Test", const std::string& save_path = "../webcam_images/") {
+    Mat frame{};
+
+    //Initialize the video capture.
+    VideoCapture cap;
+
+    // Open the selected camera, using the selected API.
+    cap.open(deviceID + apiID);
+
+    // Check if camera was successfully opened.
+    if (!cap.isOpened()) {
+        std::cerr << "ERROR! Unable to open camera\n";
+        exit(EXIT_FAILURE);
+    }
+
+    std::cout << "Press any key to take a picture!" << std::endl;
+
+    for (int i = 0; i < num_pictures; i++) {
+        for (;;) {
+            // Wait for a new frame from camera and store it into 'frame'.
+            cap.read(frame);
+
+            // Check if the frame isn't empty.
+            if (frame.empty()) {
+                std::cerr << "ERROR: blank frame grabbed\n";
+                break;
+            }
+
+            // Show live preview.
+            imshow("Live", frame);
+
+            // If a key from the keyboard to be pressed, a picture is taken.
+            if (cvWaitKey(5) != -1) {
+                std::cout << "Picture " + std::to_string(i + 1) + " was taken!" << std::endl;
+                imwrite(save_path + name_prefix + std::to_string(i) + ".jpg", frame);
+                break;
+            }
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     imageProcessing ip;
 
@@ -161,4 +238,9 @@ int main(int argc, char *argv[]) {
         ip.reduce_resolution("../orl_faces/s" + std::to_string(i) + "/", 56, 46);
         ip.split_dataset("../orl_faces/s" + std::to_string(i) + "/", 3);
     }
+
+    ip.live_face_recognition(0, CV_CAP_ANY);
+    ip.take_pictures(0, CV_CAP_ANY, 5);
+
+    return 0;
 }
