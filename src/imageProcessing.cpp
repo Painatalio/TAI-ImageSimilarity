@@ -4,8 +4,6 @@
 //            Rafael Teixeira.
 //
 
-#include <dirent.h>
-#include <sys/stat.h>
 #include "imageProcessing.h"
 
 using namespace cv;
@@ -35,7 +33,7 @@ std::vector<std::string> openDir(const std::string& path){
     return files;
 }
 
-std::string saveDir(const std::string& path, const std::string& initial_path) {
+std::string newPath(const std::string& path, const std::string& initial_path, bool create_folder) {
     size_t pos;
     std::string p(path);
     std::string save_folder;
@@ -46,14 +44,16 @@ std::string saveDir(const std::string& path, const std::string& initial_path) {
     }
 
     std::string new_path = initial_path + save_folder + "/";
-    mkdir(new_path.c_str(), 0777);
+
+    if (create_folder)
+        mkdir(new_path.c_str(), 0777);
 
     return new_path;
 }
 
 void imageProcessing::quantize(const std::string& path, int q) {
     std::string initial_path = "../quant_faces/";
-    std::string new_path = saveDir(path, initial_path);
+    std::string new_path = newPath(path, initial_path, true);
     std::vector<std::string> images = openDir(path);
 
     for (const auto& image : images) {
@@ -87,7 +87,7 @@ void imageProcessing::quantize(const std::string& path, int q) {
 
 void imageProcessing::reduce_resolution(const std::string& path, int width, int height) {
     std::string initial_path = "../reduced_faces/";
-    std::string new_path = saveDir(path, initial_path);
+    std::string new_path = newPath(path, initial_path, true);
     std::vector<std::string> images = openDir(path);
 
     for (const auto& image : images) {
@@ -120,12 +120,38 @@ void imageProcessing::reduce_resolution(const std::string& path, int width, int 
     }
 }
 
-void imageProcessing::split_dataset() {
+void imageProcessing::split_dataset(const std::string& path, int images_per_subject) {
+    std::string reference_path = newPath(path, "../reference_subset/", false);
+    reference_path = reference_path.substr(0, reference_path.size() - 1);
+    std::string test_path = newPath(path, "../test_subset/", false);
+    test_path = test_path.substr(0, test_path.size() - 1);
+    std::vector<std::string> images = openDir(path);
 
+    for (int i = 0; i < images_per_subject; i++) {
+        std::ifstream in(path + images.at(i), std::ios::in | std::ios::binary);
+        std::ofstream out(reference_path + images.at(i), std::ios::out | std::ios::binary);
+        out << in.rdbuf();
+    }
+
+    for (size_t i = images_per_subject; i < images.size(); i++) {
+        std::ifstream in(path + images.at(i), std::ios::in | std::ios::binary);
+        std::ofstream out(test_path + images.at(i), std::ios::out | std::ios::binary);
+        out << in.rdbuf();
+    }
 }
 
 int main(int argc, char *argv[]) {
     imageProcessing ip;
-    ip.quantize("../orl_faces/s01/", 128);
-    ip.reduce_resolution("../orl_faces/s01/", 56, 46);
+
+    for (int i = 1; i < 10; i++) {
+        ip.quantize("../orl_faces/s0" + std::to_string(i) + "/", 128);
+        ip.reduce_resolution("../orl_faces/s0" + std::to_string(i) + "/", 56, 46);
+        ip.split_dataset("../orl_faces/s0" + std::to_string(i) + "/", 3);
+    }
+
+    for (int i = 10; i <= 40; i++) {
+        ip.quantize("../orl_faces/s" + std::to_string(i) + "/", 128);
+        ip.reduce_resolution("../orl_faces/s" + std::to_string(i) + "/", 56, 46);
+        ip.split_dataset("../orl_faces/s" + std::to_string(i) + "/", 3);
+    }
 }
