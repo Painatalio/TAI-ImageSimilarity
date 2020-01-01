@@ -127,6 +127,13 @@ void imageProcessing::split_dataset(const std::string& path, int images_per_subj
     test_path = test_path.substr(0, test_path.size() - 1);
     std::vector<std::string> images = openDir(path);
 
+    if (images_per_subject >= images.size()) {
+        std::cerr << "ERROR: All images were requested for the reference subset, "
+                     "or the requested number of images for the reference subset "
+                     "is greater than the number of available images!" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     for (int i = 0; i < images_per_subject; i++) {
         std::ifstream in(path + images.at(i), std::ios::in | std::ios::binary);
         std::ofstream out(reference_path + images.at(i), std::ios::out | std::ios::binary);
