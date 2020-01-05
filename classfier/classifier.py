@@ -59,7 +59,14 @@ dataset = "orl_faces"
 
 preprocessing = [ { "prep" : "resize", "ratio": 0.5}, { "prep" : "resize", "ratio": 0.2}, {"prep" : "quantization", "n_bits" : 2} ]
 
-classifiers = [{"classifier": "ncd", "compressor" : "bzip2" }, {"classifier": "ncd", "compressor" : "gzip" }, {"classifier": "nccd", "ctx" : "ctx1" }]
+classifiers = [
+    {"classifier": "ncd", "compressor" : "gzip" }, 
+    {"classifier": "ncd", "compressor" : "bzip2" },    
+    {"classifier": "ncd", "compressor" : "lzma" },
+    {"classifier": "ncd", "compressor" : "png" },
+    {"classifier": "ncd", "compressor" : "jpeg" }, 
+    {"classifier": "nccd", "ctx" : "ctx1" }
+    ]
 
 allErrors = []
 
