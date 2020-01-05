@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
 
 			cvResize(&tmp, &iplDst, CV_INTER_AREA);
 
-			refs.push_back(cvarrToMat(&iplDst));
+			refs.push_back(dst);
 		}
 
 		for(unsigned n = 0 ; n < tempTars.size() ; ++n){
@@ -279,7 +279,7 @@ int main(int argc, char *argv[]) {
 			cout << ttmp.cols << endl;
 			cout << ttmp.rows << endl;
 
-			tars.push_back(cvarrToMat(&iplDst));
+			tars.push_back(dst);
 		}
 
 	}
