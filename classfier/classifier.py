@@ -1,6 +1,7 @@
 import math
 import os
 import sys
+import csv
 from PIL import Image
 import pre_processing
 from ncdC import Ncd
@@ -13,7 +14,7 @@ def getDataset(dataset, preprocessing):
     files = os.listdir(dataset)
 
     counter = 0
-    for f in files:
+    for f in files[:3]:
 
         fullPath = os.path.join(dataset, f)
 
@@ -57,19 +58,33 @@ def getError(classifications):
 
 dataset = "orl_faces"
 
-preprocessing = [ { "prep" : "resize", "ratio": 0.5}, { "prep" : "resize", "ratio": 0.2}, {"prep" : "quantization", "n_bits" : 2} ]
+quantization_levels = [2, 4, 8, 16, 32, 64]
+resize_ratios = [0.5, 0.25, 0.10]
+
+preprocessing = [ 
+    {"prep" : "resize", "ratio": 0.5}, 
+    {"prep" : "resize", "ratio": 0.25}, 
+    {"prep" : "resize", "ratio": 0.1}, 
+    {"prep" : "quantization", "n_bits" : 2},
+    {"prep" : "quantization", "n_bits" : 4},
+    {"prep" : "quantization", "n_bits" : 6},
+    ]
 
 classifiers = [
+    {"classifier": "nccd", "ctx" : "ctx1" },
     {"classifier": "ncd", "compressor" : "gzip" }, 
     {"classifier": "ncd", "compressor" : "bzip2" },    
     {"classifier": "ncd", "compressor" : "lzma" },
     {"classifier": "ncd", "compressor" : "png" },
-    {"classifier": "ncd", "compressor" : "jpeg" }, 
-    {"classifier": "nccd", "ctx" : "ctx1" }
+    {"classifier": "ncd", "compressor" : "jpeg" }
+    #{"classifier": "nccd", "ctx" : "ctx1" }
     ]
 
 allErrors = []
 
+output_file = open('output.csv','w') 
+writer = csv.writer(output_file, delimiter=',')
+writer.writerow(["Resize/Quantization", "Ratio/N_Bits", "Classifier", "Compressor/Ctx", "Error"])
 for p in range(len(preprocessing)):
     prepDataset = getDataset(dataset, preprocessing[p])
 
@@ -79,13 +94,16 @@ for p in range(len(preprocessing)):
 
     for c in range(len(classifiers)):
 
+        value_key_preprocessing = "n_bits" if "n_bits" in preprocessing[p] else "ratio"
+        value_key_classifier = "ctx" if "ctx" in classifiers[c] else "compressor"
+
         if(classifiers[c]["classifier"] == "ncd"):
             print("Classifing using ", classifiers[c]["classifier"], " with compressor ", classifiers[c]["compressor"], 
-            "\nand Preprocessing ", preprocessing[p]["prep"], " with ratio ", preprocessing[p]["ratio"])
+            "\nand Preprocessing ", preprocessing[p]["prep"], " with value ", preprocessing[p][value_key_preprocessing])
 
         elif(classifiers[c]["classifier"] == "nccd"):
             print("Classifing using ", classifiers[c]["classifier"], " with compressor ", classifiers[c]["ctx"], 
-            "\nand Preprocessing ", preprocessing[p]["prep"], " with ratio ", preprocessing[p]["ratio"])
+            "\nand Preprocessing ", preprocessing[p]["prep"], " with value ", preprocessing[p][value_key_preprocessing])
             prepDataset = getDataset(dataset, "noPrep")
 
 
@@ -109,8 +127,9 @@ for p in range(len(preprocessing)):
 
                     classifications[i].append(compressSpace.index(min(compressSpace)))
             errors.append(getError(classifications))
-        
         allErrors[p].append(sum(errors)/len(errors))
+        
+        writer.writerow([preprocessing[p]["prep"], preprocessing[p][value_key_preprocessing], classifiers[c]["classifier"], classifiers[c][value_key_classifier], sum(errors)/len(errors)])
             
 min_errors = [ min(x) for x in allErrors]
 

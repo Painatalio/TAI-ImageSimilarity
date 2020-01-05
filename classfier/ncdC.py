@@ -17,19 +17,19 @@ class Ncd:
         self.algorithm = algorithm
 
     # compress a byte array, given an algorithm
-    def compress_image(image, algorithm):
+    def compress_image(self, image):
         byteIO = io.BytesIO()
 
-        if algorithm in ["png", "jpeg"]:
-            image.save(byteIO, format=algorithm)
+        if self.algorithm in ["png", "jpeg"]:
+            image.save(byteIO, format=self.algorithm)
             return byteIO.getvalue()
         else:
             image.save(byteIO, format="PPM")
-            if algorithm == "gzip":
+            if self.algorithm == "gzip":
                 return gzip.compress(byteIO.getvalue())
-            elif algorithm == "bzip2":
+            elif self.algorithm == "bzip2":
                 return bz2.compress(byteIO.getvalue())
-            elif algorithm == "lzma":
+            elif self.algorithm == "lzma":
                 return lzma.compress(byteIO.getvalue())
 
     # with the bytes arrays, computes the value of the ncd
