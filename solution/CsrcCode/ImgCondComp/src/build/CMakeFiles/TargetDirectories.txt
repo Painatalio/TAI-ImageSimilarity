@@ -1,3 +1,0 @@
-/home/user/Desktop/ZiTh0s/docs/uni/TAI/projeto3/solution/CsrcCode/ImgCondComp/src/build/CMakeFiles/rebuild_cache.dir
-/home/user/Desktop/ZiTh0s/docs/uni/TAI/projeto3/solution/CsrcCode/ImgCondComp/src/build/CMakeFiles/ImgCondComp.dir
-/home/user/Desktop/ZiTh0s/docs/uni/TAI/projeto3/solution/CsrcCode/ImgCondComp/src/build/CMakeFiles/edit_cache.dir
