@@ -292,6 +292,7 @@ int main(int argc, char *argv[]) {
 			tars.push_back(tempTars[n]);
 		}
 	}
+	
 	// Perform uniform quantization
 	if(qStep != 1) {
 		for(unsigned n = 0 ; n < refs.size() ; ++n)
@@ -315,6 +316,8 @@ int main(int argc, char *argv[]) {
 	for(unsigned n = 0 ; n < tars.size() ; ++n)
 		for(auto it = tars[n].begin<uchar>() ; it != tars[n].end<uchar>() ; ++it)
 			*it = alphabet.ts2cs(*it);
+
+
 
 	for(int n = 1 ; n < argc ; ++n) {
 		if(string(argv[n]) == "-rc") {
