@@ -14,7 +14,7 @@ def getDataset(dataset, preprocessing):
     files = os.listdir(dataset)
 
     counter = 0
-    for f in files[:3]:
+    for f in files:
 
         fullPath = os.path.join(dataset, f)
 
@@ -71,7 +71,6 @@ preprocessing = [
     ]
 
 classifiers = [
-    {"classifier": "nccd", "ctx" : "ctx1" },
     {"classifier": "ncd", "compressor" : "gzip" }, 
     {"classifier": "ncd", "compressor" : "bzip2" },    
     {"classifier": "ncd", "compressor" : "lzma" },
