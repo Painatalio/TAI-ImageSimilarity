@@ -1,9 +1,6 @@
-import os
 from fcm import Fcm
 from ctx import Ctx
 from alphabet import Alphabet
-from PIL import Image
-import matplotlib.image as img
 import math
 import numpy
 
