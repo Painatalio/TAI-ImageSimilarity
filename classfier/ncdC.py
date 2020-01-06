@@ -16,21 +16,27 @@ class Ncd:
 
         self.algorithm = algorithm
 
-    # compress a byte array, given an algorithm
-    def compress_image(self, image):
+    # convert image to byte array
+    def image_to_byte_array(self, image):
         byteIO = io.BytesIO()
+        image.save(byteIO, format='PPM')
+        # return the byte array
+        return byteIO.getvalue()
 
-        if self.algorithm in ["png", "jpeg"]:
-            image.save(byteIO, format=self.algorithm)
-            return byteIO.getvalue()
+
+    # compresse a byte array, given an algorithm
+    def compress_image(self, image_byte_array):
+        if self.algorithm == "gzip":
+            return gzip.compress(image_byte_array)
+        elif self.algorithm == "bzip2":
+            return bz2.compress(image_byte_array)
+        elif self.algorithm == "lzma":
+            return lzma.compress(image_byte_array)
         else:
-            image.save(byteIO, format="PPM")
-            if self.algorithm == "gzip":
-                return gzip.compress(byteIO.getvalue())
-            elif self.algorithm == "bzip2":
-                return bz2.compress(byteIO.getvalue())
-            elif self.algorithm == "lzma":
-                return lzma.compress(byteIO.getvalue())
+            print("Invalid compressing algorithm")
+            sys.exit(1)
+
+
 
     # with the bytes arrays, computes the value of the ncd
     def compute_ncd(self, compressed_concat_image, compressed_image_x, compressed_image_y):
@@ -44,34 +50,42 @@ class Ncd:
         # concat the 2 images 
         # this will result in a RGB image, instead of a PPM image
         # later, we will also convert the 2 images to RGB, so we can compare all of them
-        results = []
-        for image_x in train_set:
-            total_width = image_x.size[0] + image_y.size[0]
-            max_height = image_x.size[1] if  image_x.size[1] > image_y.size[1] else image_y.size[1]
-            
-            concatenated_image = Image.new('RGB', (total_width, max_height))
+        image_x = new_im = Image.new("L", (184, 224))
+        x_offset = 0
+        for img in train_set:
+            image_x.paste(img, (x_offset,0))
+            x_offset += img.size[0]
 
-            # paste the 2 images together (horizontally)
-            x_offset = 0
-            for im in [image_x, image_y]:
-                concatenated_image.paste(im, (x_offset,0))
-                x_offset += im.size[0]
+        total_width = image_x.size[0] + image_y.size[0]
+        max_height = image_x.size[1] if  image_x.size[1] > image_y.size[1] else image_y.size[1]
+        
+        concatenated_image = Image.new('RGB', (total_width, max_height))
 
-            # image_x to RGB
-            width, height = image_x.size
-            image_x_rgb = Image.new('RGB', (width, height))  
-            image_x_rgb.paste(image_x)
+        # paste the 2 images together (horizontally)
+        x_offset = 0
+        for im in [image_x, image_y]:
+            concatenated_image.paste(im, (x_offset,0))
+            x_offset += im.size[0]
 
-            # image_y to RGB
-            width, height = image_y.size
-            image_y_rgb = Image.new('RGB', (width, height))  
-            image_y_rgb.paste(image_y)
+        # image_x to RGB
+        width, height = image_x.size
+        image_x_rgb = Image.new('RGB', (width, height))  
+        image_x_rgb.paste(image_x)
 
-            # compress images
-            concatenated_image_compressed = self.compress_image(concatenated_image)
-            image_x_compressed = self.compress_image(image_x_rgb)
-            image_y_compressed = self.compress_image(image_y_rgb)
+        # image_y to RGB
+        width, height = image_y.size
+        image_y_rgb = Image.new('RGB', (width, height))  
+        image_y_rgb.paste(image_y)
 
-            # compute NCD
-            results.append(self.compute_ncd(concatenated_image_compressed, image_x_compressed, image_y_compressed))
-        return min(results)
+        # all images to byte arrays
+        concatenated_image_byte_array = self.image_to_byte_array(concatenated_image)
+        image_x_byte_array = self.image_to_byte_array(image_x_rgb)
+        image_y_byte_array = self.image_to_byte_array(image_y_rgb)
+
+        # compress images
+        concatenated_image_compressed = self.compress_image(concatenated_image_byte_array)
+        image_x_compressed = self.compress_image(image_x_byte_array)
+        image_y_compressed = self.compress_image(image_y_byte_array)
+
+        # compute NCD
+        return self.compute_ncd(concatenated_image_compressed, image_x_compressed, image_y_compressed)
