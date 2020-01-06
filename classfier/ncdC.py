@@ -6,8 +6,6 @@ import lzma
 from PIL import Image
 
 
-
-
 class Ncd:
 
     algorithm = ""

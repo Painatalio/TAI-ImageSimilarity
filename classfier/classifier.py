@@ -44,7 +44,7 @@ def getClassifier(properties, preprocessing):
         return Ncd(properties["compressor"])
 
     if properties["classifier"] == "nccd":
-        return Nccd(properties["ctx"], preprocessing)
+        return Nccd(properties["ctx"], properties["ctx"], properties["gamma"])
 
 def getError(classifications):
     errors = 0
@@ -65,18 +65,13 @@ preprocessing = [
     {"prep" : "resize", "ratio": 0.5}, 
     {"prep" : "resize", "ratio": 0.25}, 
     {"prep" : "resize", "ratio": 0.1}, 
-    {"prep" : "quantization", "n_bits" : 2},
     {"prep" : "quantization", "n_bits" : 4},
     {"prep" : "quantization", "n_bits" : 6},
     ]
 
 classifiers = [
-    {"classifier": "ncd", "compressor" : "gzip" }, 
-    {"classifier": "ncd", "compressor" : "bzip2" },    
-    {"classifier": "ncd", "compressor" : "lzma" },
-    {"classifier": "ncd", "compressor" : "png" },
-    {"classifier": "ncd", "compressor" : "jpeg" }
-    #{"classifier": "nccd", "ctx" : "ctx1" }
+    {"classifier": "nccd", "ctx" : "ctx1" }
+    {"classifier": "nccd", "ctx" : "ctx2" }
     ]
 
 allErrors = []
@@ -103,8 +98,6 @@ for p in range(len(preprocessing)):
         elif(classifiers[c]["classifier"] == "nccd"):
             print("Classifing using ", classifiers[c]["classifier"], " with compressor ", classifiers[c]["ctx"], 
             "\nand Preprocessing ", preprocessing[p]["prep"], " with value ", preprocessing[p][value_key_preprocessing])
-            prepDataset = getDataset(dataset, "noPrep")
-
 
         classifier = getClassifier(classifiers[c], preprocessing[p])
         errors = []
