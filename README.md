@@ -21,7 +21,7 @@ Para que o cv2 funcionar corretamente em python3, executar o seguinte comando:
 pip3 install opencv-python --user
 ```
 
-### Correr o programa
+### Correr o programa para as classificações
 
 Para correr as classificações usando NCD e NCCD apenas é necessário:
 ```bash
@@ -56,7 +56,19 @@ classifiers = [
 Caso se pretenda utilizar apenas um algoritmo de compressão, devem-se comentar as restantes entradas do dicionário ```classifiers```.
 
 ### Reultados
-Os resultados deste estudo podem ser encontrados em ```results/results.csv```. Nesdte ficheiro encontra-se o erro obtido para a classificação das imagens do dataset, com recurso a diversos algoritmos de compressão e a diferentes mecanismos de pré-processamento.
+Os resultados deste estudo podem ser encontrados em ```results/results.csv```. Neste ficheiro encontra-se o erro obtido para a classificação das imagens do dataset, com recurso a diversos algoritmos de compressão e a diferentes mecanismos de pré-processamento.
+
+### Correr o programa de reconhecimento facial
+O programa para o reconhecimento facial tem 2 funções: tirar fotografias e realizar o reconhecimento facial.
+Para tirar fotografias, o seguinte comando deve ser exectuado, dentro da pasta src/camera/:
+```bash
+python3 cameraRecog.py 0
+```
+
+Para realizar o reconhecimento facial:
+```bash
+python3 cameraRecog.py 1 ../../images/webcam_images gzip 1.01
+```
 
 ### Relatório
 
