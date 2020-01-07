@@ -1,5 +1,7 @@
 
-
+'''
+Guarda um dado contexto.
+'''
 class Ctx:
 
     coords = []
@@ -19,6 +21,9 @@ class Ctx:
         for i in range(0, len(coords), 2):
             self.coords.append([splited_values[i + 1], splited_values[i]]) # [x, y] type of array
 
+    '''
+        A chave são os valores dos píxeis.
+    '''
     def key(self, img, currrent):
 
         result = ''

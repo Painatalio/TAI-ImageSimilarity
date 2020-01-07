@@ -3,6 +3,8 @@ from ctx import Ctx
 from alphabet import Alphabet
 import math
 import numpy
+import copy
+from PIL import Image
 
 class Nccd:
 
@@ -26,17 +28,22 @@ class Nccd:
         self.tarCtx = tarCtx
         self.gamma = gamma
 
+    '''
+      Realiza o calculo do NCCD
+    '''
     def classify(self, refImages, tarImage):
 
-        tarImage = numpy.array(tarImage.getdata()).reshape(tarImage.size[0], tarImage.size[1]).tolist()
-        
-        Cy = self.compress([list(x) for x in tarImage ], gamma = self.gamma)
+        Cy = self.compress(numpy.array(tarImage.getdata()).reshape(tarImage.size[0], tarImage.size[1]).tolist(), 
+                gamma = self.gamma)
 
-        refI = [ [list(x) for x in numpy.array(ref.getdata()).reshape(ref.size[0], ref.size[1]).tolist() ] for ref in refImages ]
+        return self.compress(refImages = [ numpy.array(ref.getdata()).reshape(ref.size[0], ref.size[1]).tolist() for ref in refImages ], 
+                tarImage = numpy.array(tarImage.getdata()).reshape(tarImage.size[0], tarImage.size[1]).tolist(), 
+                gamma = self.gamma)/ Cy
 
-        return self.compress(refImages = refI, tarImage = [list(x) for x in tarImage ], gamma = self.gamma)/ Cy
 
-    
+    '''
+      Carrega os modelos de contexto finito estáticos
+    '''
     def loadReferences(self, refImages):
 
         for refImage in refImages:
@@ -45,8 +52,11 @@ class Nccd:
                     for j in range(len(refImage[i])):
                         self.refFcms[ctx].increment(self.refCtxs[ctx].key(refImage, (i,j)), refImage[i][j])
 
-
+    '''
+      Calcula o número de bits necessários para representar uma imagem dado as imagens de referência e um gamma.
+    '''
     def compress(self, tarImage, refImages = [], gamma = 0.99):
+
         self.tarCtxs = []
         self.tarFcms = []
         self.refCtxs = []
@@ -149,4 +159,4 @@ class Nccd:
                 for ctx in range(len(self.tarCtxs)):
                     self.tarFcms[ctx].increment(self.tarCtxs[ctx].key(tarImage, (i, j)), tarImage[i][j])
                     
-        return nBits 
+        return nBits

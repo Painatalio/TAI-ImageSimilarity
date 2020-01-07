@@ -44,7 +44,7 @@ class Ncd:
         # concat the 2 images 
         # this will result in a L image, instead of a PPM image
         # later, we will also convert the 2 images to L, so we can compare all of them
-        image_x = new_im = Image.new("L", (184, 224))
+        image_x = Image.new("L", (184, 224))
         x_offset = 0
         for img in train_set:
             image_x.paste(img, (x_offset,0))

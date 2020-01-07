@@ -8,6 +8,11 @@ from ncdC import Ncd
 from nccdC import Nccd
 import random
 
+
+
+'''
+Dado um dataset carrega-o usando a técnica de pré-processamento especificada.
+'''
 def getDataset(dataset, preprocessing):
     
     prepDataset = []
@@ -24,8 +29,8 @@ def getDataset(dataset, preprocessing):
             for photo in os.listdir(fullPath):
 
                 photoPath = os.path.join(fullPath, photo)
-                if preprocessing == "noPrep":
-                    prepDataset[counter].append(photoPath)
+                if preprocessing["prep"] == "original":
+                    prepDataset[counter].append(Image.open(photoPath))
                 elif preprocessing["prep"] == "resize":
                     prepDataset[counter].append(pre_processing.resize_image(Image.open(photoPath), preprocessing["ratio"] ))
                 elif preprocessing["prep"] == "quantization":
@@ -38,7 +43,11 @@ def getDataset(dataset, preprocessing):
 
     return prepDataset
 
-def getClassifier(properties, preprocessing):
+
+'''
+Cria o classifier passado por argumento.
+'''
+def getClassifier(properties):
 
     if properties["classifier"] == "ncd":
         return Ncd(properties["compressor"])
@@ -46,6 +55,11 @@ def getClassifier(properties, preprocessing):
     if properties["classifier"] == "nccd":
         return Nccd(properties["ctx"], properties["ctx"], properties["gamma"])
 
+
+
+'''
+Dado um conjunto de classificações calcula o rácio de classificações erradas.
+'''
 def getError(classifications):
     errors = 0
     for i in range(len(classifications)):
@@ -55,36 +69,55 @@ def getError(classifications):
 
     return errors/(len(classifications) * len(classifications[0]))
 
-
+'''
+Pasta onde se encontra o dataset
+'''
 dataset = "orl_faces"
 
-
+'''
+Técnicas de préprocessamento utilizadas.
+'''
 preprocessing = [ 
     #original image
-    {"prep" : "resize", "ratio": 1},
+    {"prep" : "original", "ratio":1},
     # resized and quantized
     {"prep" : "resize", "ratio": 0.5}, 
     {"prep" : "resize", "ratio": 0.25}, 
     {"prep" : "resize", "ratio": 0.1}, 
     {"prep" : "quantization", "n_bits" : 4},
-    {"prep" : "quantization", "n_bits" : 6},
+    {"prep" : "quantization", "n_bits" : 6}
     ]
 
+'''
+Classificadores Utilizados.
+'''
 classifiers = [
     {"classifier": "ncd", "compressor" : "gzip" }, 
     {"classifier": "ncd", "compressor" : "bzip2" },    
     {"classifier": "ncd", "compressor" : "lzma" },
     {"classifier": "ncd", "compressor" : "png" },
     {"classifier": "ncd", "compressor" : "jpeg" },
-    {"classifier": "nccd", "ctx" : "ctx1" },
-    {"classifier": "nccd", "ctx" : "ctx2" }
+    {"classifier": "nccd", "ctx" : "ctx1", "gamma" : 0.99 }
     ]
 
+'''
+Matriz que guarda os erros de todas as combinações preprocessing x classifiers
+'''
 allErrors = []
 
+'''
+Ficheiro no qual se vai guardar os resultados obtidos
+'''
 output_file = open('output_6.csv','w') 
 writer = csv.writer(output_file, delimiter=',')
 writer.writerow(["Resize/Quantization", "Ratio/N_Bits", "Classifier", "Compressor/Ctx", "Error"])
+
+
+
+'''
+Obtenção da matriz de resultados com recurso a uma abordagem
+semelhante a k-fold cross validation.
+'''
 for p in range(len(preprocessing)):
     prepDataset = getDataset(dataset, preprocessing[p])
 
@@ -102,18 +135,20 @@ for p in range(len(preprocessing)):
             "\nand Preprocessing ", preprocessing[p]["prep"], " with value ", preprocessing[p][value_key_preprocessing])
 
         elif(classifiers[c]["classifier"] == "nccd"):
-            print("Classifing using ", classifiers[c]["classifier"], " with compressor ", classifiers[c]["ctx"], 
+            print("Classifing using ", classifiers[c]["classifier"], " with context ", classifiers[c]["ctx"], 
             "\nand Preprocessing ", preprocessing[p]["prep"], " with value ", preprocessing[p][value_key_preprocessing])
 
-        classifier = getClassifier(classifiers[c], preprocessing[p])
         errors = []
-        for k in range(0,5):
-            print("\t  k=", k)
+        if classifiers[c]["classifier"] == "nccd" :
+
             classifications = []
+            '''
+              Divisão do Dataset
+            '''
+            X_train = [ x[k*leap:k*leap+leap] for x in prepDataset[0:2] ]
 
-            X_train = [ x[k*leap:k*leap+leap] for x in prepDataset ]
+            X_test = [ [ *x[0:k*leap], *x[k*leap+leap:] ] for x in prepDataset[0:2] ]
 
-            X_test = [ [ *x[0:k*leap], *x[k*leap+leap:] ] for x in prepDataset ]
             for i in range(len(X_test)):
                 classifications.append([])
                 for j in range(len(X_test[i])):
@@ -121,10 +156,46 @@ for p in range(len(preprocessing)):
                     compressSpace = []
 
                     for train_set in X_train:
+                        print("train-set")
+                        classifier = getClassifier(classifiers[c])
+                        #Obtém o min NCCD para a compressão das fotos de referência de todos os sujeitos e da imagem de teste y
                         compressSpace.append(classifier.classify(train_set, photo))
-
+                        del classifier
+                    #atribui o menor NCCD como sendo a classificação feita para  a imagem y
                     classifications[i].append(compressSpace.index(min(compressSpace)))
+            #Guarda os erro para o respetivo k (neste caso só é 1)
             errors.append(getError(classifications))
+
+        else:
+            classifier = getClassifier(classifiers[c])
+            for k in range(0,5):
+            
+                print("\t  k=", k)
+
+                classifications = []
+                '''
+                  Divisão do dataset.
+                '''
+                X_train = [ x[k*leap:k*leap+leap] for x in prepDataset[0:2] ]
+
+                X_test = [ [ *x[0:k*leap], *x[k*leap+leap:] ] for x in prepDataset[0:2] ]
+                for i in range(len(X_test)):
+                    classifications.append([])
+                    for j in range(len(X_test[i])):
+                        compressSpace = []
+
+                        for train_set in X_train:
+                            #Obtém o min NCD para a compressão das fotos de referência de todos os sujeitos e da imagem de teste y  
+                            compressSpace.append(classifier.classify(train_set, X_test[i][j]))
+
+                        #atribui o menor NCD como sendo a classificação feita para  a imagem y
+                        classifications[i].append(compressSpace.index(min(compressSpace)))
+
+                #Guarda os erro para o respetivo k
+                errors.append(getError(classifications))
+        '''
+          Guarda o erro médio para o classifcador x preprocessing
+        '''
         allErrors[p].append(sum(errors)/len(errors))
         
         writer.writerow([preprocessing[p]["prep"], preprocessing[p][value_key_preprocessing], classifiers[c]["classifier"], classifiers[c][value_key_classifier], sum(errors)/len(errors)])
