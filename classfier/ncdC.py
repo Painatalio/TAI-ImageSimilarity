@@ -15,9 +15,9 @@ class Ncd:
         self.algorithm = algorithm
 
 
-    # compresse a byte array, given an algorithm
+    # compress an image, given an algorithm
     def compress_image(self, image):
-        byteIO = io.BytesIO()
+        byteIO = io.BytesIO()   
         if self.algorithm in ["png", "jpeg"]:
             image.save(byteIO, format=self.algorithm)
             return byteIO.getvalue()
@@ -63,12 +63,12 @@ class Ncd:
 
         # image_x to RGB
         width, height = image_x.size
-        image_x_rgb = Image.new('RGB', (width, height))  
+        image_x_rgb = Image.new('L', (width, height))  
         image_x_rgb.paste(image_x)
 
         # image_y to RGB
         width, height = image_y.size
-        image_y_rgb = Image.new('RGB', (width, height))  
+        image_y_rgb = Image.new('L', (width, height))  
         image_y_rgb.paste(image_y)
 
         # compress images

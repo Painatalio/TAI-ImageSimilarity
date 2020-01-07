@@ -58,30 +58,31 @@ def getError(classifications):
 
 dataset = "orl_faces"
 
-quantization_levels = [2, 4, 8, 16, 32, 64]
-resize_ratios = [0.5, 0.25, 0.10]
 
 preprocessing = [ 
-    #{"prep" : "resize", "ratio": 0.5} 
+    #original image
+    {"prep" : "resize", "ratio": 1},
+    # resized and quantized
+    {"prep" : "resize", "ratio": 0.5}, 
     {"prep" : "resize", "ratio": 0.25}, 
-    #{"prep" : "resize", "ratio": 0.1}, 
-    #{"prep" : "quantization", "n_bits" : 4},
-    #{"prep" : "quantization", "n_bits" : 6},
+    {"prep" : "resize", "ratio": 0.1}, 
+    {"prep" : "quantization", "n_bits" : 4},
+    {"prep" : "quantization", "n_bits" : 6},
     ]
 
 classifiers = [
-    #{"classifier": "ncd", "compressor" : "gzip" }, 
-    #{"classifier": "ncd", "compressor" : "bzip2" },    
-    #{"classifier": "ncd", "compressor" : "lzma" },
+    {"classifier": "ncd", "compressor" : "gzip" }, 
+    {"classifier": "ncd", "compressor" : "bzip2" },    
+    {"classifier": "ncd", "compressor" : "lzma" },
     {"classifier": "ncd", "compressor" : "png" },
     {"classifier": "ncd", "compressor" : "jpeg" },
-    #{"classifier": "nccd", "ctx" : "ctx1" },
-    #{"classifier": "nccd", "ctx" : "ctx2" }
+    {"classifier": "nccd", "ctx" : "ctx1" },
+    {"classifier": "nccd", "ctx" : "ctx2" }
     ]
 
 allErrors = []
 
-output_file = open('output_2.csv','w') 
+output_file = open('output_6.csv','w') 
 writer = csv.writer(output_file, delimiter=',')
 writer.writerow(["Resize/Quantization", "Ratio/N_Bits", "Classifier", "Compressor/Ctx", "Error"])
 for p in range(len(preprocessing)):
