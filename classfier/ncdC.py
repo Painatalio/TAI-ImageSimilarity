@@ -42,8 +42,8 @@ class Ncd:
 
     def classify(self, train_set, image_y):
         # concat the 2 images 
-        # this will result in a RGB image, instead of a PPM image
-        # later, we will also convert the 2 images to RGB, so we can compare all of them
+        # this will result in a L image, instead of a PPM image
+        # later, we will also convert the 2 images to L, so we can compare all of them
         image_x = new_im = Image.new("L", (184, 224))
         x_offset = 0
         for img in train_set:
@@ -53,7 +53,7 @@ class Ncd:
         total_width = image_x.size[0] + image_y.size[0]
         max_height = image_x.size[1] if  image_x.size[1] > image_y.size[1] else image_y.size[1]
         
-        concatenated_image = Image.new('RGB', (total_width, max_height))
+        concatenated_image = Image.new('L', (total_width, max_height))
 
         # paste the 2 images together (horizontally)
         x_offset = 0
@@ -61,20 +61,20 @@ class Ncd:
             concatenated_image.paste(im, (x_offset,0))
             x_offset += im.size[0]
 
-        # image_x to RGB
+        # image_x to L
         width, height = image_x.size
-        image_x_rgb = Image.new('L', (width, height))  
-        image_x_rgb.paste(image_x)
+        image_x_L = Image.new('L', (width, height))  
+        image_x_L.paste(image_x)
 
-        # image_y to RGB
+        # image_y to L
         width, height = image_y.size
-        image_y_rgb = Image.new('L', (width, height))  
-        image_y_rgb.paste(image_y)
+        image_y_L = Image.new('L', (width, height))  
+        image_y_L.paste(image_y)
 
         # compress images
         concatenated_image_compressed = self.compress_image(concatenated_image)
-        image_x_compressed = self.compress_image(image_x_rgb)
-        image_y_compressed = self.compress_image(image_y_rgb)
+        image_x_compressed = self.compress_image(image_x_L)
+        image_y_compressed = self.compress_image(image_y_L)
 
         # compute NCD
         return self.compute_ncd(concatenated_image_compressed, image_x_compressed, image_y_compressed)
