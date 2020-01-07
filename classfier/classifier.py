@@ -145,9 +145,9 @@ for p in range(len(preprocessing)):
             '''
               Divisão do Dataset
             '''
-            X_train = [ x[k*leap:k*leap+leap] for x in prepDataset[0:2] ]
+            X_train = [ x[0:leap] for x in prepDataset[0:2] ]
 
-            X_test = [ [ *x[0:k*leap], *x[k*leap+leap:] ] for x in prepDataset[0:2] ]
+            X_test = [ x[leap:] for x in prepDataset[0:2] ]
 
             for i in range(len(X_test)):
                 classifications.append([])
@@ -156,7 +156,6 @@ for p in range(len(preprocessing)):
                     compressSpace = []
 
                     for train_set in X_train:
-                        print("train-set")
                         classifier = getClassifier(classifiers[c])
                         #Obtém o min NCCD para a compressão das fotos de referência de todos os sujeitos e da imagem de teste y
                         compressSpace.append(classifier.classify(train_set, photo))
@@ -176,9 +175,9 @@ for p in range(len(preprocessing)):
                 '''
                   Divisão do dataset.
                 '''
-                X_train = [ x[k*leap:k*leap+leap] for x in prepDataset[0:2] ]
+                X_train = [ x[k*leap:k*leap+leap] for x in prepDataset ]
 
-                X_test = [ [ *x[0:k*leap], *x[k*leap+leap:] ] for x in prepDataset[0:2] ]
+                X_test = [ [ *x[0:k*leap], *x[k*leap+leap:] ] for x in prepDataset ]
                 for i in range(len(X_test)):
                     classifications.append([])
                     for j in range(len(X_test[i])):
