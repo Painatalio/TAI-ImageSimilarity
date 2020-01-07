@@ -60,7 +60,7 @@ Os resultados deste estudo podem ser encontrados em ```results/results.csv```. N
 
 ### Correr o programa de reconhecimento facial
 O programa para o reconhecimento facial tem 2 funções: tirar fotografias e realizar o reconhecimento facial.
-Para tirar fotografias, o seguinte comando deve ser exectuado, dentro da pasta src/camera/:
+Para tirar fotografias, o seguinte comando deve ser exectuado, dentro da pasta ```src/camera/```:
 ```bash
 python3 cameraRecog.py 0
 ```
