@@ -30,4 +30,9 @@ quantization,6,ncd,lzma,0.731875
 quantization,6,ncd,png,0.43812500000000004
 quantization,6,ncd,jpeg,0.9493750000000001
 
-
+original,1,nccd,ctx1,0.5625
+resize,0.5,nccd,ctx1,0.5625
+resize,0.25,nccd,ctx1,0.4375
+resize,0.1,nccd,ctx1,0.5
+quantization,4,nccd,ctx1,0.0625
+quantization,6,nccd,ctx1,0.1875
