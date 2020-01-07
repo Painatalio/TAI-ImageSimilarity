@@ -55,7 +55,7 @@ classifiers = [
 
 Caso se pretenda utilizar apenas um algoritmo de compressão, devem-se comentar as restantes entradas do dicionário ```classifiers```.
 
-### Reultados
+### Resultados
 Os resultados deste estudo podem ser encontrados em ```results/results.csv```. Neste ficheiro encontra-se o erro obtido para a classificação das imagens do dataset, com recurso a diversos algoritmos de compressão e a diferentes mecanismos de pré-processamento.
 
 ### Correr o programa de reconhecimento facial
